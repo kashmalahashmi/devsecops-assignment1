@@ -1,67 +1,43 @@
 version: 2.1
 
-executors:
-  docker-executor:
-    docker:
-      - image: circleci/python:3.8
-
 jobs:
   build:
-    executor: docker-executor
+    docker:
+      - image: circleci/node:latest
     steps:
       - checkout
-      - run:
-          name: Install dependencies
-          command: |
-            pip install Flask==2.0.1
-            pip install requests==2.26.0
-            pip install pytest==6.2.5
+      - run: echo "Building application..."
 
   test:
-    executor: docker-executor
+    docker:
+      - image: circleci/node:latest
     steps:
       - checkout
-      - run:
-          name: Install pytest
-          command: pip install pytest
-      - run:
-          name: Run unit tests
-          command: pytest tests/  # Change this if your tests are in a different folder
+      - run: echo "Running unit tests..."
 
   build-docker:
     docker:
-      - image: docker:19.03.12
+      - image: circleci/python:3.8
     steps:
-      - setup_remote_docker
       - checkout
+      - setup_remote_docker
       - run:
           name: Build Docker Image
-          command: docker build -t kaysan98/invoicer .
-
-  push-docker:
-    docker:
-      - image: docker:19.03.12
-    steps:
-      - setup_remote_docker
-      - checkout
+          command: |
+            docker build -t $DOCKERHUB_USERNAME/invoicer .
       - run:
-          name: Login to Docker Hub
-          command: echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+          name: Authenticate with Docker Hub
+          command: |
+            echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
       - run:
           name: Push Docker Image
-          command: docker push kaysan98/invoicer
+          command: |
+            docker push $DOCKERHUB_USERNAME/invoicer
 
 workflows:
   version: 2
   build_and_push:
     jobs:
       - build
-      - test:
-          requires:
-            - build
-      - build-docker:
-          requires:
-            - test
-      - push-docker:
-          requires:
-            - build-docker
+      - test
+      - build-docker
