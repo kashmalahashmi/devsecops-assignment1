@@ -3,7 +3,7 @@ version: 2.1
 executors:
   docker-executor:
     docker:
-      - image: circleci/python:3.8  # Change if needed
+      - image: circleci/python:3.9  # Python base image to use
 
 jobs:
   build:
@@ -12,7 +12,7 @@ jobs:
       - checkout
       - run:
           name: Install dependencies
-          command: pip install -r requirements.txt || pip install pytest  # Install if requirements.txt exists
+          command: pip install -r requirements.txt || pip install pytest  # If requirements.txt exists
 
   test:
     executor: docker-executor
@@ -24,9 +24,10 @@ jobs:
 
   build-docker:
     docker:
-      - image: docker:latest
+      - image: docker:latest  # Use Docker image for building and pushing
     steps:
-      - setup_remote_docker
+      - setup_remote_docker:
+          version: 20.10.7  # Ensure you use the correct version of Docker
       - checkout
       - run:
           name: Ensure bin/invoicer Exists
@@ -37,7 +38,7 @@ jobs:
       - run:
           name: Build Docker Image
           command: |
-            docker build -t $DOCKERHUB_USERNAME/invoicer:latest .
+            docker build -t invoicer:latest .  # Corrected tag format
       - run:
           name: Authenticate with Docker Hub
           command: |
@@ -45,7 +46,7 @@ jobs:
       - run:
           name: Push Docker Image
           command: |
-            docker push $DOCKERHUB_USERNAME/invoicer:latest
+            docker push invoicer:latest  # Corrected tag format
 
 workflows:
   version: 2
