@@ -3,7 +3,7 @@ version: 2.1
 executors:
   docker-executor:
     docker:
-      - image: circleci/python:3.8  # Use your required Python image version
+      - image: circleci/python:3.8
 
 jobs:
   build:
@@ -11,11 +11,11 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Install Flask and other dependencies
+          name: Install dependencies
           command: |
             pip install Flask==2.0.1
             pip install requests==2.26.0
-            pip install pytest==6.2.5  # Make sure pytest is installed here
+            pip install pytest==6.2.5
 
   test:
     executor: docker-executor
@@ -23,14 +23,14 @@ jobs:
       - checkout
       - run:
           name: Install pytest
-          command: pip install pytest  # Ensure pytest is installed in the test job
+          command: pip install pytest
       - run:
           name: Run unit tests
-          command: pytest  # Run the unit tests with pytest
+          command: pytest tests/  # Change this if your tests are in a different folder
 
   build-docker:
     docker:
-      - image: docker:19.03.12  # Docker image for building
+      - image: docker:19.03.12
     steps:
       - setup_remote_docker
       - checkout
