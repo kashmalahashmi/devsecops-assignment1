@@ -1,13 +1,9 @@
 version: 2.1
 
-executors:
-  docker-executor:
-    docker:
-      - image: circleci/python:3.9  # Python base image to use
-
 jobs:
   build:
-    executor: docker-executor
+    docker:
+      - image: circleci/python:3.9  # Python base image to use
     steps:
       - checkout
       - run:
@@ -15,7 +11,8 @@ jobs:
           command: pip install -r requirements.txt || pip install pytest  # If requirements.txt exists
 
   test:
-    executor: docker-executor
+    docker:
+      - image: circleci/python:3.9
     steps:
       - checkout
       - run:
@@ -26,7 +23,7 @@ jobs:
     docker:
       - image: docker:latest  # Use Docker image for building and pushing
     steps:
-      - setup_remote_docker:  # Removed version specification
+      - setup_remote_docker:
           docker_layer_caching: true  # Enable Docker layer caching to speed up builds
       - checkout
       - run:
@@ -39,7 +36,7 @@ jobs:
       - run:
           name: Build Docker Image
           command: |
-            docker build -t invoicer:latest .
+            docker build -t $DOCKER_USERNAME/invoicer:latest .
 
       - run:
           name: Authenticate with Docker Hub
@@ -49,7 +46,7 @@ jobs:
       - run:
           name: Push Docker Image
           command: |
-            docker push invoicer:latest
+            docker push $DOCKER_USERNAME/invoicer:latest
 
 workflows:
   version: 2
