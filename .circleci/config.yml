@@ -1,23 +1,23 @@
 version: 2.1
 
-# Define executors for reusable docker environments
 executors:
   docker-executor:
     docker:
       - image: circleci/python:3.8  # Adjust based on your project’s Python version
 
-# Define the jobs
 jobs:
-  # Job to install dependencies and build the project
   build:
     executor: docker-executor
     steps:
       - checkout  # Checkout the repository code
       - run:
-          name: Install dependencies
-          command: pip install -r requirements.txt  # Install Python dependencies from requirements.txt
+          name: Install Flask and other dependencies
+          command: |
+            pip install Flask==2.0.1
+            pip install requests==2.26.0
+            pip install pytest==6.2.5
+            # Add any additional dependencies here
 
-  # Job to run unit tests using pytest
   test:
     executor: docker-executor
     steps:
@@ -26,7 +26,6 @@ jobs:
           name: Run unit tests
           command: pytest  # Run unit tests using pytest
 
-  # Job to build the Docker image
   build-docker:
     docker:
       - image: docker:19.03.12  # Docker image for building the Docker container
@@ -39,7 +38,6 @@ jobs:
           name: Build Docker Image
           command: docker build -t your-dockerhub-username/your-image-name .  # Replace with your Docker Hub username and image name
 
-  # Job to push the Docker image to Docker Hub
   push-docker:
     docker:
       - image: docker:19.03.12  # Docker image for pushing the built image to Docker Hub
@@ -55,7 +53,6 @@ jobs:
           name: Push Docker Image
           command: docker push your-dockerhub-username/your-image-name  # Replace with your Docker Hub username and image name
 
-# Define workflows to orchestrate job execution
 workflows:
   version: 2
   build_and_push:
