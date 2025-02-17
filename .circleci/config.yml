@@ -3,12 +3,12 @@ version: 2.1
 executors:
   docker-executor:
     docker:
-      - image: invoicer/python:3.8
+      - image: circleci/python:3.8
 
 jobs:
   build:
     docker:
-      - image: invoicer/node:latest
+      - image: circleci/node:latest
     steps:
       - checkout
       - run: echo "Building application..."
@@ -18,7 +18,7 @@ jobs:
 
   test:
     docker:
-      - image: invoicer/node:latest
+      - image: circleci/node:latest
     steps:
       - checkout
       - run: echo "Running unit tests..."
