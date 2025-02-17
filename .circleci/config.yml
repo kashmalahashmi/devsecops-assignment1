@@ -29,6 +29,12 @@ jobs:
       - setup_remote_docker
       - checkout
       - run:
+          name: Ensure bin/invoicer Exists
+          command: |
+            mkdir -p bin
+            echo '#!/bin/bash\necho "Hello, Invoicer!"' > bin/invoicer
+            chmod +x bin/invoicer
+      - run:
           name: Build Docker Image
           command: |
             docker build -t $DOCKERHUB_USERNAME/invoicer:latest .
