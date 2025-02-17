@@ -23,12 +23,14 @@ jobs:
     steps:
       - checkout
       - setup_remote_docker:
-          version: '20.10.7' # Specify the Docker version if needed
-          docker_layer_caching: true # Enable layer caching for faster builds
-      - run: |
-          echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-          docker build -t kaysan98/invoicer .
-          docker push kaysan98/invoicer
+          version: '20.10.7'  # Ensure Docker version compatibility
+          docker_layer_caching: true
+          docker_sock: /var/run/docker.sock
+      - run: echo "Docker setup complete"
+      - run: echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+      - run: docker --version
+      - run: docker build -t kaysan98/invoicer .
+      - run: docker push kaysan98/invoicer
 
 workflows:
   version: 2
