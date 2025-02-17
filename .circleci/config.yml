@@ -3,67 +3,65 @@ version: 2.1
 executors:
   docker-executor:
     docker:
-      - image: circleci/python:3.8  # Adjust based on your project’s Python version
+      - image: circleci/python:3.8  # Use your required Python image version
 
 jobs:
   build:
     executor: docker-executor
     steps:
-      - checkout  # Checkout the repository code
+      - checkout
       - run:
           name: Install Flask and other dependencies
           command: |
             pip install Flask==2.0.1
             pip install requests==2.26.0
-            pip install pytest==6.2.5
-            # Add any additional dependencies here
+            pip install pytest==6.2.5  # Make sure pytest is installed here
 
   test:
     executor: docker-executor
     steps:
-      - checkout  # Checkout the repository code
+      - checkout
+      - run:
+          name: Install pytest
+          command: pip install pytest  # Ensure pytest is installed in the test job
       - run:
           name: Run unit tests
-          command: pytest  # Run unit tests using pytest
+          command: pytest  # Run the unit tests with pytest
 
   build-docker:
     docker:
-      - image: docker:19.03.12  # Docker image for building the Docker container
+      - image: docker:19.03.12  # Docker image for building
     steps:
-      - setup_remote_docker:  # Setup Docker environment
-          version: '20.10.7'
-          docker_layer_caching: true  # Enable caching for faster builds
-      - checkout  # Checkout the repository code
+      - setup_remote_docker
+      - checkout
       - run:
           name: Build Docker Image
-          command: docker build -t kaysan98/invoicer .  # Replace with your Docker Hub username and image name
+          command: docker build -t kaysan98/invoicer .
 
   push-docker:
     docker:
-      - image: docker:19.03.12  # Docker image for pushing the built image to Docker Hub
+      - image: docker:19.03.12
     steps:
-      - setup_remote_docker:  # Setup Docker environment
-          version: '20.10.7'
-          docker_layer_caching: true
-      - checkout  # Checkout the repository code
+      - setup_remote_docker
+      - checkout
       - run:
           name: Login to Docker Hub
-          command: echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin  # Login to Docker Hub
+          command: echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
       - run:
           name: Push Docker Image
-          command: docker kaysan98/invoicer  # Replace with your Docker Hub username and image name
+          command: docker push kaysan98/invoicer
 
 workflows:
   version: 2
   build_and_push:
     jobs:
-      - build  # First, run the build job to install dependencies
+      - build
       - test:
           requires:
-            - build  # Run tests only after the build job completes
+            - build
       - build-docker:
           requires:
-            - test  # Build Docker image only after tests pass
+            - test
       - push-docker:
           requires:
-            - build-docker  # Push Docker image only after it has been built
+            - build-docker
