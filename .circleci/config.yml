@@ -36,7 +36,7 @@ jobs:
       - checkout  # Checkout the repository code
       - run:
           name: Build Docker Image
-          command: docker build -t your-dockerhub-username/your-image-name .  # Replace with your Docker Hub username and image name
+          command: docker build -t kaysan98/invoicer .  # Replace with your Docker Hub username and image name
 
   push-docker:
     docker:
@@ -51,7 +51,7 @@ jobs:
           command: echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin  # Login to Docker Hub
       - run:
           name: Push Docker Image
-          command: docker push your-dockerhub-username/your-image-name  # Replace with your Docker Hub username and image name
+          command: docker kaysan98/invoicer  # Replace with your Docker Hub username and image name
 
 workflows:
   version: 2
