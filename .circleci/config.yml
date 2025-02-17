@@ -11,7 +11,7 @@ executors:
 
   docker-executor:
     docker:
-      - image: docker:20.10.14 # Use a newer version for stability
+      - image: docker:20.10 # Use a general version without specifying a minor update
 
 jobs:
   build:
@@ -34,8 +34,7 @@ jobs:
     executor: docker-executor
     steps:
       - checkout
-      - setup_remote_docker:
-          version: 20.10.14
+      - setup_remote_docker  # Removed version specification
       - run:
           name: Build Docker Image
           command: |
@@ -48,8 +47,7 @@ jobs:
     executor: docker-executor
     steps:
       - checkout
-      - setup_remote_docker:
-          version: 20.10.14
+      - setup_remote_docker  # Removed version specification
       - run:
           name: Authenticate with Docker Hub
           command: echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
