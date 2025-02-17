@@ -1,54 +1,72 @@
 version: 2.1
 
-# Define the jobs for the pipeline
+# Define executors for reusable docker environments
+executors:
+  docker-executor:
+    docker:
+      - image: circleci/python:3.8  # Adjust based on your project’s Python version
+
+# Define the jobs
 jobs:
+  # Job to install dependencies and build the project
   build:
-    # Define the environment for the job
-    docker:
-      - image: cimg/node:current  # Use a Node.js image (adjust this if you're using a different language or framework)
+    executor: docker-executor
     steps:
-      - checkout  # Checkout the code from your repository
+      - checkout  # Checkout the repository code
       - run:
-          name: "Install dependencies"
-          command: npm install  # Install dependencies for your Node.js app
+          name: Install dependencies
+          command: pip install -r requirements.txt  # Install Python dependencies from requirements.txt
 
+  # Job to run unit tests using pytest
   test:
-    docker:
-      - image: cimg/node:current  # Use the same Node.js Docker image
+    executor: docker-executor
     steps:
-      - checkout  # Checkout the code again
+      - checkout  # Checkout the repository code
       - run:
-          name: "Run unit tests"
-          command: npm test  # Run the unit tests (assuming you have a test script defined in package.json)
+          name: Run unit tests
+          command: pytest  # Run unit tests using pytest
 
-  docker-build:
+  # Job to build the Docker image
+  build-docker:
     docker:
-      - image: cimg/python:current  # Use a Python Docker image (adjust this if needed for your language stack)
+      - image: docker:19.03.12  # Docker image for building the Docker container
     steps:
-      - checkout  # Checkout the code
-      - setup_remote_docker:  # Setup remote Docker to build and push Docker images
-          version: '20.10.7'  # Specify Docker version
-          docker_layer_caching: true  # Enable caching for Docker layers to speed up builds
+      - setup_remote_docker:  # Setup Docker environment
+          version: '20.10.7'
+          docker_layer_caching: true  # Enable caching for faster builds
+      - checkout  # Checkout the repository code
       - run:
-          name: "Login to Docker Hub"
-          command: |
-            echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin  # Docker login
-      - run:
-          name: "Build Docker image"
-          command: docker build -t kaysan98/invoicer:latest .  # Build the Docker image
-      - run:
-          name: "Push Docker image to Docker Hub"
-          command: docker push kaysan98/invoicer:latest  # Push the image to Docker Hub
+          name: Build Docker Image
+          command: docker build -t your-dockerhub-username/your-image-name .  # Replace with your Docker Hub username and image name
 
-# Orchestrate the jobs using a workflow
+  # Job to push the Docker image to Docker Hub
+  push-docker:
+    docker:
+      - image: docker:19.03.12  # Docker image for pushing the built image to Docker Hub
+    steps:
+      - setup_remote_docker:  # Setup Docker environment
+          version: '20.10.7'
+          docker_layer_caching: true
+      - checkout  # Checkout the repository code
+      - run:
+          name: Login to Docker Hub
+          command: echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin  # Login to Docker Hub
+      - run:
+          name: Push Docker Image
+          command: docker push your-dockerhub-username/your-image-name  # Replace with your Docker Hub username and image name
+
+# Define workflows to orchestrate job execution
 workflows:
   version: 2
-  build-and-deploy:
+  build_and_push:
     jobs:
-      - build  # Run the build job first
+      - build  # First, run the build job to install dependencies
       - test:
           requires:
-            - build  # Run tests only after the build job completes successfully
-      - docker-build:
+            - build  # Run tests only after the build job completes
+      - build-docker:
           requires:
-            - test  # Build and push Docker image after tests pass
+            - test  # Build Docker image only after tests pass
+      - push-docker:
+          requires:
+            - build-docker  # Push Docker image only after it has been built
