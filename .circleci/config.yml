@@ -11,7 +11,7 @@ executors:
 
   docker-executor:
     docker:
-      - image: docker:20.10 # Use a general version without specifying a minor update
+      - image: docker:20.10
 
 jobs:
   build:
@@ -34,11 +34,11 @@ jobs:
     executor: docker-executor
     steps:
       - checkout
-      - setup_remote_docker  # Removed version specification
+      - setup_remote_docker
       - run:
           name: Build Docker Image
           command: |
-            docker build -t $DOCKERHUB_USERNAME/invoicer:latest .
+            docker build -t invoicer:latest .
       - run:
           name: Verify Image Build
           command: docker images | grep invoicer
@@ -47,10 +47,13 @@ jobs:
     executor: docker-executor
     steps:
       - checkout
-      - setup_remote_docker  # Removed version specification
+      - setup_remote_docker
       - run:
           name: Authenticate with Docker Hub
           command: echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+      - run:
+          name: Tag Docker Image
+          command: docker tag invoicer:latest $DOCKERHUB_USERNAME/invoicer:latest
       - run:
           name: Push Docker Image
           command: docker push $DOCKERHUB_USERNAME/invoicer:latest
