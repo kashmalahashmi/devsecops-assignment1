@@ -18,8 +18,9 @@ jobs:
       - image: circleci/node:latest
     steps:
       - checkout
-      - run: echo "Running unit tests..."
-      - run: npm test
+      - run:
+          name: Run unit tests
+          command: npm test
 
   docker-build:
     docker:
