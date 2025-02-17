@@ -6,8 +6,12 @@ jobs:
       - image: circleci/node:latest
     steps:
       - checkout
-      - run: echo "Building the code..."
-      - run: npm install
+      - run:
+          name: List files in the project directory
+          command: ls -al /home/circleci/project
+      - run:
+          name: Install dependencies
+          command: npm install
 
   test:
     docker:
@@ -23,14 +27,12 @@ jobs:
     steps:
       - checkout
       - setup_remote_docker:
-          version: '20.10.7'  # Ensure Docker version compatibility
+          version: '20.10.7'
           docker_layer_caching: true
-          docker_sock: /var/run/docker.sock
-      - run: echo "Docker setup complete"
-      - run: echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-      - run: docker --version
-      - run: docker build -t kaysan98/invoicer .
-      - run: docker push kaysan98/invoicer
+      - run: |
+          echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+          docker build -t kaysan98/invoicer .
+          docker push kaysan98/invoicer
 
 workflows:
   version: 2
